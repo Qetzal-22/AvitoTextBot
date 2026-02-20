@@ -24,8 +24,6 @@ async def category_kb():
 async def equipment_kb(message_id: int, equipments: list):
     bld = InlineKeyboardBuilder()
     for key, equipment in EQUIPMENTS.items():
-        logger.info(f"key: {key}; equipment: {equipment}")
-        logger.info(f"equipments: {equipments}; result: {equipment in equipments}")
         if key in equipments:
             bld.button(text=f"{equipment}✅", callback_data=f"equipment:{key}:{message_id}")
         else:
