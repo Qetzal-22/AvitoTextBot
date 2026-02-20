@@ -10,7 +10,8 @@ from app.bot.static import RegisterUser
 from app.bot.keyboard import main_kb, category_kb, equipment_kb
 from app.bot.static import GetDataForCar
 from app.db import crud
-from app.config.config import CATEGORY
+from app.db.models import Data_Plan
+from app.config.config import DATA_PLAN
 
 logger = logging.getLogger(__name__)
 user_router_bot = Router()
@@ -173,18 +174,81 @@ async def text_generate_get_reason_for_sale(message: Message, state: FSMContext)
 async def text_generate_get_additional(message: Message, state: FSMContext):
     additional = message.text
     await state.update_data(additional=additional)
-
     await message.answer("Обрабатываю данные...")
+
     # request AI
 
+    await state.clear()
 
 
-############################################### profil #####################################################################
+############################################### profile ####################################################################
 
+@user_router_bot.message(F.text.casefold().endswith("профиль"))
+async def to_profile(message: Message, db: Session):
+    data_user = crud.get_user_tg_id(message.from_user.id, db)
+    subscription_expires = data_user.subscription_expires
+    logger.info(f"data_user data_plat type - {type(data_user.data_plan)}")
+    if data_user.subscription_expires is None:
+        subscription_expires = "-"
+    text = (
+        "👤 <b>Профиль пользователя</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n\n"
+
+        f"👤 <b>Username:</b>\n"
+        f"{data_user.username}\n\n"
+
+        f"💎 <b>Тариф:</b>\n"
+        f"{data_user.data_plan.value.upper()}\n\n"
+
+        f"📅 <b>Подписка до:</b>\n"
+        f"{subscription_expires}\n\n"
+
+        f"📊 <b>Запросов в этом месяце:</b>\n"
+        f"{data_user.monthly_request}\n\n"
+
+        "━━━━━━━━━━━━━━━━━━\n"
+        "<i>Avito Text Bot</i>"
+    )
+
+    await message.answer(text, parse_mode="HTML")
 
 
 ############################################### data plan ##################################################################
 
+@user_router_bot.message(F.text.casefold().endswith("подписки"))
+async def to_data_plan(message: Message, db: Session):
+    data_user = crud.get_user_tg_id(message.from_user.id, db)
+    subscription_expires = data_user.subscription_expires
+    logger.info(f"data_user data_plat type - {type(data_user.data_plan)}")
+    if data_user.subscription_expires is None:
+        subscription_expires = "-"
+    text = (
+        "💎 <b>Тарифные планы</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n\n"
+    )
+
+    for key, plan in DATA_PLAN.items():
+
+        # Эмодзи для каждого тарифа
+        if key == "free":
+            emoji = "🆓"
+        elif key == "pro":
+            emoji = "🚀"
+        elif key == "premium":
+            emoji = "👑"
+        else:
+            emoji = "📦"
+
+        text += (
+            f"{emoji} <b>{plan['title']}</b>\n"
+            "━━━━━━━━━━━━\n"
+            f"💰 Стоимость: {plan['amount']} ₽\n"
+            f"📊 Лимит запросов: {plan['count_request']} / месяц\n\n\n"
+        )
+
+    text += "━━━━━━━━━━━━━━━━━━\n<i>Avito Text Bot</i>"
+
+    await message.answer(text, parse_mode="HTML")
 
 
 
