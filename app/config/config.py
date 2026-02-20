@@ -11,3 +11,4 @@ DB_URL = os.path.join(ROOT_DIR, *config["db_url"].split("/"))
 DB_URL = f"sqlite:///{DB_URL}"
 
 CATEGORY = config["category"]
+EQUIPMENTS = config["equipments"]
