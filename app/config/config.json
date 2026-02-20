@@ -13,5 +13,22 @@
     "stabilization_system": "Система стабилизации ESP / ABS",
     "cruise_control": "Круиз-контроль",
     "parking_sensor": "Парктроники"
+  },
+  "data_plan": {
+    "free": {
+      "title": "FREE",
+      "amount": 0,
+      "count_request": 30
+    },
+    "pro": {
+      "title": "PRO",
+      "amount": 100,
+      "count_request": 100
+    },
+    "premium": {
+      "title": "PREMIUM",
+      "amount": 500,
+      "count_request": 1000
+    }
   }
 }

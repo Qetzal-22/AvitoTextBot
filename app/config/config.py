@@ -12,3 +12,4 @@ DB_URL = f"sqlite:///{DB_URL}"
 
 CATEGORY = config["category"]
 EQUIPMENTS = config["equipments"]
+DATA_PLAN = config["data_plan"]
