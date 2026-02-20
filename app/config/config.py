@@ -7,5 +7,7 @@ CONFIG_URL = os.path.join(ROOT_DIR, "app", "config", "config.json")
 with open(CONFIG_URL, "r", encoding="utf-8") as f:
     config = json.load(f)
 
-DB_URL = os.path.join(ROOT_DIR, *config["DB_URL"].split("/"))
+DB_URL = os.path.join(ROOT_DIR, *config["db_url"].split("/"))
 DB_URL = f"sqlite:///{DB_URL}"
+
+CATEGORY = config["category"]

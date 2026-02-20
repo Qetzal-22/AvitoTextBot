@@ -1,3 +1,7 @@
 {
-  "DB_URL": "data/database.db"
+  "db_url": "data/database.db",
+  "category": {
+    "car": "Автомобили",
+    "phone": "Телефон"
+  }
 }
