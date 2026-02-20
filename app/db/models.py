@@ -33,7 +33,7 @@ class User(Base):
     total_request = Column(Integer, default=0)
     monthly_request = Column(Integer, default=0)
 
-    is_active = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
 
     requests = relationship("Request", back_populates="user", cascade="all, delete")
     payments = relationship("Payment", back_populates="user", cascade="all, delete")
@@ -48,7 +48,7 @@ class Request(Base):
 
     create_at = Column(DateTime, default=datetime.utcnow)
 
-    user = relationship("Users", back_populates="requests")
+    user = relationship("User", back_populates="requests")
 
 
 class Payment(Base):
@@ -63,4 +63,4 @@ class Payment(Base):
 
     create_at = Column(DateTime, default=datetime.utcnow)
 
-    user = relationship("Users", back_populates="payments")
+    user = relationship("User", back_populates="payments")
