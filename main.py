@@ -3,8 +3,11 @@ from aiogram.types import Message, BotCommand
 from aiogram.filters import Command
 
 import asyncio
+import logging
 
 from app.bot.bot import bot, dp
+from app.bot.handler.user import user_router_bot
+from app.config.logging_config import setup_logging
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
@@ -18,7 +21,9 @@ async def set_my_command(bot: Bot):
 
 async def start_bot():
     await set_my_command(bot)
+    dp.include_router(user_router_bot)
     await dp.start_polling(bot)
+
 
 async def main():
     await asyncio.gather(
@@ -26,4 +31,7 @@ async def main():
     )
 
 if __name__ == "__main__":
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    logger.info("Application started")
     asyncio.run(main())

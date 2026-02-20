@@ -4,11 +4,12 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.orm import Session
+import logging
 
 from app.bot.static import RegisterUser
 from app.db import crud
 
-
+logger = logging.getLogger(__name__)
 user_router_bot = Router()
 
 @user_router_bot.message(Command("register"))
@@ -23,6 +24,7 @@ async def get_username(message: Message, state: FSMContext, db: Session):
     username = message.text
     crud.create_user(tg_id, username, db)
     await state.clear()
+    logger.info("User success register")
     await message.answer("Вы успешно зарегистрированны")
 
 @user_router_bot.message(Command("/main"))
