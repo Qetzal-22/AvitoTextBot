@@ -32,3 +32,17 @@ async def equipment_kb(message_id: int, equipments: list):
     bld.button(text="Подтвердить✅", callback_data="equipment_success")
     bld.adjust(2, 1, 1, 1, 1, 2)
     return bld.as_markup()
+
+async def profile_kb():
+    bld = ReplyKeyboardBuilder()
+    bld.button(text="Поменять тариф")
+    bld.button(text="Назад")
+    bld.adjust(1, 1)
+    return bld.as_markup()
+
+async def data_plan_kb():
+    bld = InlineKeyboardBuilder()
+    bld.button(text="PRO", callback_data="new_data_plan:pro")
+    bld.button(text="PREMIUM", callback_data="new_data_plan:premium")
+    bld.adjust(1, 1, 1)
+    return bld.as_markup()
