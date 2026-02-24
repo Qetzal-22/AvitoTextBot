@@ -269,11 +269,6 @@ async def data_plan_pro(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-@user_router_bot.callback_query(F.data.startswith("new_data_plan:pay"))
-async def data_plan_pay(callback: CallbackQuery):
-    await callback.answer()
-    data_plan_type = callback.data.split(":")[2]
-
 
 ############################################################################################################################
 
