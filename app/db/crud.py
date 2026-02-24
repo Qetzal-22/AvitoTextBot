@@ -8,7 +8,7 @@ from app.db.models import User, Request, Payment, Data_Plan, Status_Pay
 
 logger = logging.getLogger(__name__)
 
-def create_user(tg_id: int, username: int, db: Session):
+def create_user(tg_id: int, username: str, db: Session):
     logger.info(f"Create user - tg_id: {tg_id} | username: {username}")
     user_db = User(tg_id=tg_id, username=username)
     db.add(user_db)
@@ -110,17 +110,27 @@ def get_request(id: int, db: Session):
     request_db = db.query(Request).filter(Request.id == id).first()
     return request_db
 
-def create_payment(provider_payment_id: int, user_id: int, amount: int, status: Status_Pay, db: Session):
-    logger.info(f"Create payment - provider_payment_id: {provider_payment_id} | user_id: {user_id} | amount: {amount} | status: {status}")
+def create_payment(payload: str, user_id: int, amount: int, status: Status_Pay, plan: Data_Plan, db: Session):
+    logger.info(f"Create payment - provider_payment_id: {payload} | user_id: {user_id} | amount: {amount} | status: {status} plan: {plan} |")
 
-    payment_db = Payment(provider_payment_id=provider_payment_id, user_id=user_id, amount=amount, status=status)
+    payment_db = Payment(payload=payload, user_id=user_id, amount=amount, status=status, plan=plan)
     db.add(payment_db)
     db.commit()
     db.refresh(payment_db)
     return payment_db
 
-def get_payment(id: int, db: Session):
-    logger.info(f"Get payment - id: {id}")
+def update_payment_status(payload: str, new_status: Status_Pay, db: Session):
+    logger.info(f"Update payment - payload: {payload}; new_status: {new_status}")
 
-    payment_db = db.query(Payment).filter(Payment.id == id).first()
+    payment_db = db.query(Payment).filter(Payment.payload == payload).first()
+    payment_db.status = new_status
+    db.commit()
+    db.refresh(payment_db)
+    return payment_db
+
+
+def get_payment(payload: str, db: Session):
+    logger.info(f"Get payment - payload: {payload}")
+
+    payment_db = db.query(Payment).filter(Payment.payload == payload).first()
     return payment_db

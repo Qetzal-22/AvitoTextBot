@@ -55,11 +55,12 @@ class Payment(Base):
     __tablename__ = "payment"
 
     id = Column(Integer, primary_key=True)
-    provider_payment_id = Column(String, unique=True)
+    payload  = Column(String, unique=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
 
     amount = Column(Integer)
     status = Column(Enum(Status_Pay))
+    plan = Column(Enum(Data_Plan))
 
     create_at = Column(DateTime, default=datetime.utcnow)
 
