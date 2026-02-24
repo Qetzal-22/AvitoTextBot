@@ -18,17 +18,17 @@
     "free": {
       "title": "FREE",
       "amount": 0,
-      "count_request": 30
+      "count_request": 1
     },
     "pro": {
       "title": "PRO",
       "amount": 100,
-      "count_request": 100
+      "count_request": 3
     },
     "premium": {
       "title": "PREMIUM",
       "amount": 500,
-      "count_request": 1000
+      "count_request": 10
     }
   }
 }

@@ -36,13 +36,18 @@ async def equipment_kb(message_id: int, equipments: list):
 async def profile_kb():
     bld = ReplyKeyboardBuilder()
     bld.button(text="Поменять тариф")
-    bld.button(text="Назад")
+    bld.button(text="Назад на главную")
     bld.adjust(1, 1)
-    return bld.as_markup()
+    return bld.as_markup(resize_keyboard=True)
 
 async def data_plan_kb():
     bld = InlineKeyboardBuilder()
-    bld.button(text="PRO", callback_data="new_data_plan:pro")
-    bld.button(text="PREMIUM", callback_data="new_data_plan:premium")
+    bld.button(text="PRO ➡️", callback_data="new_data_plan:view:pro")
+    bld.button(text="PREMIUM ➡️", callback_data="new_data_plan:view:premium")
     bld.adjust(1, 1, 1)
+    return bld.as_markup()
+
+async def data_plan_pay_kb(data_plan: str):
+    bld = InlineKeyboardBuilder()
+    bld.button(text="Купить", callback_data=f"new_data_plan:pay:{data_plan}")
     return bld.as_markup()

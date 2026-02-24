@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 import logging
 
 from app.bot.static import RegisterUser
-from app.bot.keyboard import main_kb, category_kb, equipment_kb
+from app.bot.keyboard import main_kb, category_kb, equipment_kb, profile_kb, data_plan_kb, data_plan_pay_kb
 from app.bot.static import GetDataForCar
 from app.db import crud
 from app.db.models import Data_Plan
@@ -38,7 +38,7 @@ async def get_username(message: Message, state: FSMContext, db: Session):
 ############################################################################################################################
 @user_router_bot.message(Command("main"))
 async def to_main(message: Message):
-    await message.answer("Main panel", reply_markup=await main_kb())
+    await message.answer("Гавная:", reply_markup=await main_kb())
 
 
 ############################################### generate text ##############################################################
@@ -210,12 +210,11 @@ async def to_profile(message: Message, db: Session):
         "<i>Avito Text Bot</i>"
     )
 
-    await message.answer(text, parse_mode="HTML")
-
+    await message.answer(text, reply_markup=await profile_kb(), parse_mode="HTML")
 
 ############################################### data plan ##################################################################
 
-@user_router_bot.message(F.text.casefold().endswith("подписки"))
+@user_router_bot.message(F.text.casefold().in_(["подписки", "поменять тариф"]))
 async def to_data_plan(message: Message, db: Session):
     data_user = crud.get_user_tg_id(message.from_user.id, db)
     subscription_expires = data_user.subscription_expires
@@ -243,13 +242,44 @@ async def to_data_plan(message: Message, db: Session):
             f"{emoji} <b>{plan['title']}</b>\n"
             "━━━━━━━━━━━━\n"
             f"💰 Стоимость: {plan['amount']} ₽\n"
-            f"📊 Лимит запросов: {plan['count_request']} / месяц\n\n\n"
+            f"📊 Лимит запросов: {plan['count_request']} / день\n\n\n"
         )
 
     text += "━━━━━━━━━━━━━━━━━━\n<i>Avito Text Bot</i>"
 
-    await message.answer(text, parse_mode="HTML")
+    await message.answer(text, reply_markup=await data_plan_kb(), parse_mode="HTML")
 
+
+@user_router_bot.callback_query(F.data.startswith("new_data_plan:view"))
+async def data_plan_pro(callback: CallbackQuery):
+    await callback.answer()
+    data_plan_type = callback.data.split(":")[2]
+    pro_data = DATA_PLAN[f"{data_plan_type}"]
+    await callback.message.answer(
+        f"🚀<b>{data_plan_type.upper()}</b>\n\n"
+        "━━━━━━━━━━━━━━━━━━\n"
+        "💰 <b>Цена: </b>\n"
+        f"{pro_data['amount']}\n"
+        "📊 <b>Запросов/день: </b>\n"
+        f"{pro_data['count_request']} ₽\n"
+        "\n"
+        "━━━━━━━━━━━━━━━━━━\n"
+        "<i>Avito Text Bot</i>",
+        reply_markup=await data_plan_pay_kb(data_plan_type),
+        parse_mode="HTML"
+    )
+
+@user_router_bot.callback_query(F.data.startswith("new_data_plan:pay"))
+async def data_plan_pay(callback: CallbackQuery):
+    await callback.answer()
+    data_plan_type = callback.data.split(":")[2]
+
+
+############################################################################################################################
+
+@user_router_bot.message(F.text.casefold().endswith("назад на главную"))
+async def back_main(message: Message):
+    return await to_main(message)
 
 
 ############################################################################################################################
