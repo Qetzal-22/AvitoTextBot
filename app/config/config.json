@@ -30,5 +30,9 @@
       "amount": 500,
       "count_request": 10
     }
+  },
+  "promts": {
+    "car": "Сделай продающий текст для авито. Нужно продать автомобиль.\nВот известные данные для написания текста:\nМарка: {car_make}\nМодель: {model}\nГод выпуска: {year_manufacture}\nПробег: {mileage}\nКоличество владельцев: {count_owner}\nКоличество ДТП: {count_accidents}\nСостояние корпуса: {body_condition}\nСостояние двигателя: {engine_condition}\nКомплектация: {equipment}\nПричина продажи: {reason_for_sale}\nДополнительная информация: {additional}\nНенужно врать на счет данных. \nПиши текст по русски",
+    "phone": ""
   }
 }

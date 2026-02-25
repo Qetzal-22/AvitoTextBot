@@ -9,12 +9,15 @@ import logging
 from app.bot.static import RegisterUser
 from app.bot.keyboard import main_kb, category_kb, equipment_kb, profile_kb, data_plan_kb, data_plan_pay_kb
 from app.bot.static import GetDataForCar
+from app.ai.request import AI
 from app.db import crud
 from app.db.models import Data_Plan
 from app.config.config import DATA_PLAN
 
 logger = logging.getLogger(__name__)
 user_router_bot = Router()
+
+ai = AI()
 
 @user_router_bot.message(Command("register"))
 async def register(message: Message, state: FSMContext):
@@ -50,6 +53,7 @@ async def text_generate_handler(message: Message):
 async def text_generate_get_category(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.answer("Выбрана категория автомобили")
+    await state.update_data(category="car")
     await state.set_state(GetDataForCar.car_make)
     await callback.message.answer("Введите марку авто:")
 
@@ -57,8 +61,8 @@ async def text_generate_get_category(callback: CallbackQuery, state: FSMContext)
 
 @user_router_bot.message(GetDataForCar.car_make)
 async def text_generate_get_mark(message: Message, state: FSMContext):
-    make_car = message.text
-    await state.update_data(make_car=make_car)
+    car_make = message.text
+    await state.update_data(car_make=car_make)
     await message.answer("Введите модель автомобиля:")
     await state.set_state(GetDataForCar.model)
 
@@ -99,16 +103,9 @@ async def text_generate_get_count_accidents(message: Message, state: FSMContext)
     count_accidents = message.text
     await state.update_data(count_accidents=count_accidents)
 
-    await message.answer("Опишите состояние корпуса состояние корпуса:")
-    await state.set_state(GetDataForCar.body_condition)
-
-@user_router_bot.message(GetDataForCar.count_accidents)
-async def text_generate_get_count_accidents(message: Message, state: FSMContext):
-    count_accidents = message.text
-    await state.update_data(count_accidents=count_accidents)
-
     await message.answer("Опишите состояние корпуса:")
     await state.set_state(GetDataForCar.body_condition)
+
 
 @user_router_bot.message(GetDataForCar.body_condition)
 async def text_generate_get_body_condition(message: Message, state: FSMContext):
@@ -174,9 +171,17 @@ async def text_generate_get_reason_for_sale(message: Message, state: FSMContext)
 async def text_generate_get_additional(message: Message, state: FSMContext):
     additional = message.text
     await state.update_data(additional=additional)
-    await message.answer("Обрабатываю данные...")
+    data = await state.get_data()
+    text = "Processes Data: "
+    for key, value in data.items():
+        text += f"\n{key}: {value}"
+    await message.answer(text)
 
     # request AI
+    resp = await ai.get_avito_text(data)
+
+    logger.info(f"Response AI: {resp}")
+    await message.answer(resp)
 
     await state.clear()
 
