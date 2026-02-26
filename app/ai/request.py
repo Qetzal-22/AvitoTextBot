@@ -18,6 +18,7 @@ class AI:
         self.model = "openrouter/free"
 
     async def send_request(self, message: str, max_token: int = 300, temperature: float = 1.0):
+        logger.info("AI request started model=%s, length_message=%s", self.model, len(message))
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -36,21 +37,34 @@ class AI:
         }
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(self.url, json=payload, headers=headers) as resp:
-                data = await resp.json()
+            logger.info("AI request POST model=%s", self.model)
+            try:
+                async with session.post(self.url, json=payload, headers=headers) as resp:
+                    logger.info("AI response received status=%s", resp.status)
+                    if resp.status != 200:
+                        logger.error("AI request failed status=%s", resp.status)
+                        raise Exception(f"AI API request failed status={resp.status}")
+                    data = await resp.json()
+            except Exception:
+                logger.exception("AI request failed")
+                raise
 
         if "error" in data:
             error = data["error"]
+            logger.error("AI API returned error=%s", error)
             raise Exception(f"Open Router error API: {error}")
 
         if data["choices"][0]["message"]["content"] != "":
+            logger.info("AI response length_content=%s", len(data["choices"][0]["message"]["content"]))
             return data["choices"][0]["message"]["content"]
+        logger.info("AI response length_content=%s", len(data["choices"][0]["message"]["reasoning"]))
         return data["choices"][0]["message"]["reasoning"]
 
     async def get_avito_text(self, data):
+        logger.info("Generating Avito text category=%s", data["category"])
         promt = PROMT_AI[data["category"]]
-        data["equipment"] = ", ".join(data["equipment"])
-        promt = promt.format(**data)
+        equipment = ", ".join(data["equipment"])
+        promt = promt.format(**{**data, "equipment": equipment})
         return await self.send_request(promt)
 
 async def main():

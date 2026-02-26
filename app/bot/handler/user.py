@@ -21,6 +21,7 @@ ai = AI()
 
 @user_router_bot.message(Command("register"))
 async def register(message: Message, state: FSMContext):
+    logger.info(f"Function register called for user_id=%s", message.from_user.id)
     await message.answer("Регистрация")
     await message.answer("Напиши свой username: ")
     await state.set_state(RegisterUser.username)
@@ -29,9 +30,11 @@ async def register(message: Message, state: FSMContext):
 async def get_username(message: Message, state: FSMContext, db: Session):
     tg_id = message.from_user.id
     username = message.text
+    logger.info("User entered username user_id=%s", tg_id)
+    logger.info("Creating user user_id=%s", tg_id)
     crud.create_user(tg_id, username, db)
     await state.clear()
-    logger.info("User success register")
+    logger.info("User created successful user_id=%s", tg_id)
     await message.answer("Вы успешно зарегистрированны")
     await to_main(message)
 
@@ -41,16 +44,19 @@ async def get_username(message: Message, state: FSMContext, db: Session):
 ############################################################################################################################
 @user_router_bot.message(Command("main"))
 async def to_main(message: Message):
+    logger.info("Function to_main called for user_id=%s", message.from_user.id)
     await message.answer("Гавная:", reply_markup=await main_kb())
 
 
 ############################################### generate text ##############################################################
 @user_router_bot.message(F.text.casefold().endswith("генерация текста"))
 async def text_generate_handler(message: Message):
+    logger.info("Start getting data for text generate for user_id=%s", message.from_user.id)
     await message.answer("Выберите категорию в которой хотите продать товар:", reply_markup=await category_kb())
 
 @user_router_bot.callback_query(F.data.startswith("car"))
 async def text_generate_get_category(callback: CallbackQuery, state: FSMContext):
+    logger.info("User choose category - car, user_id=%s", callback.message.from_user.id)
     await callback.answer()
     await callback.message.answer("Выбрана категория автомобили")
     await state.update_data(category="car")
@@ -62,6 +68,7 @@ async def text_generate_get_category(callback: CallbackQuery, state: FSMContext)
 @user_router_bot.message(GetDataForCar.car_make)
 async def text_generate_get_mark(message: Message, state: FSMContext):
     car_make = message.text
+    logger.info("User %s entered car make", message.from_user.id)
     await state.update_data(car_make=car_make)
     await message.answer("Введите модель автомобиля:")
     await state.set_state(GetDataForCar.model)
@@ -69,6 +76,7 @@ async def text_generate_get_mark(message: Message, state: FSMContext):
 @user_router_bot.message(GetDataForCar.model)
 async def text_generate_get_model(message: Message, state: FSMContext):
     model = message.text
+    logger.info("User %s entered model", message.from_user.id)
     await state.update_data(model=model)
 
     await message.answer("Введите год выпуска:")
@@ -77,6 +85,7 @@ async def text_generate_get_model(message: Message, state: FSMContext):
 @user_router_bot.message(GetDataForCar.year_manufacture)
 async def text_generate_get_year_manufacture(message: Message, state: FSMContext):
     year_manufacture = message.text
+    logger.info("User %s entered year_manufacture", message.from_user.id)
     await state.update_data(year_manufacture=year_manufacture)
 
     await message.answer("Введите пробег:")
@@ -85,6 +94,7 @@ async def text_generate_get_year_manufacture(message: Message, state: FSMContext
 @user_router_bot.message(GetDataForCar.mileage)
 async def text_generate_get_mileage(message: Message, state: FSMContext):
     mileage = message.text
+    logger.info("User %s entered mileage", message.from_user.id)
     await state.update_data(mileage=mileage)
 
     await message.answer("Введите кол-во владельцев:")
@@ -93,6 +103,7 @@ async def text_generate_get_mileage(message: Message, state: FSMContext):
 @user_router_bot.message(GetDataForCar.count_owner)
 async def text_generate_get_count_owner(message: Message, state: FSMContext):
     count_owner = message.text
+    logger.info("User %s entered count_owner", message.from_user.id)
     await state.update_data(count_owner=count_owner)
 
     await message.answer("Введите кол-во ДТП:")
@@ -101,6 +112,7 @@ async def text_generate_get_count_owner(message: Message, state: FSMContext):
 @user_router_bot.message(GetDataForCar.count_accidents)
 async def text_generate_get_count_accidents(message: Message, state: FSMContext):
     count_accidents = message.text
+    logger.info("User %s entered count_accidents", message.from_user.id)
     await state.update_data(count_accidents=count_accidents)
 
     await message.answer("Опишите состояние корпуса:")
@@ -110,6 +122,7 @@ async def text_generate_get_count_accidents(message: Message, state: FSMContext)
 @user_router_bot.message(GetDataForCar.body_condition)
 async def text_generate_get_body_condition(message: Message, state: FSMContext):
     body_condition = message.text
+    logger.info("User %s entered body_condition", message.from_user.id)
     await state.update_data(body_condition=body_condition)
 
     await message.answer("Опишите состояние двигателя:")
@@ -119,6 +132,7 @@ async def text_generate_get_body_condition(message: Message, state: FSMContext):
 async def text_generate_get_engine_condition(message: Message, state: FSMContext):
     bot = message.bot
     engine_condition = message.text
+    logger.info("User %s entered engine_condition", message.from_user.id)
     await state.update_data(engine_condition=engine_condition)
 
     bot_message = await message.answer("Выберете имеющиеся у вас комплектующие: ")
@@ -132,6 +146,7 @@ async def text_generate_get_engine_condition(message: Message, state: FSMContext
 
 @user_router_bot.callback_query(F.data.startswith("equipment_success"))
 async def text_generate_get_equipment(callback: CallbackQuery, state: FSMContext):
+    logger.info("equipment success")
     await callback.answer()
     await callback.message.answer("Напишите причину продажи: ")
     await state.set_state(GetDataForCar.reason_for_sale)
@@ -141,6 +156,7 @@ async def text_generate_get_equipment(callback: CallbackQuery, state: FSMContext
 async def text_generate_add_equipment(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     equipment = callback.data.split(":")[1]
+    logger.info("User %s click equipment - %s", callback.message.from_user.id, equipment)
     message_id = int(callback.data.split(":")[2])
     bot = callback.bot
     data = await state.get_data()
@@ -150,7 +166,7 @@ async def text_generate_add_equipment(callback: CallbackQuery, state: FSMContext
         new_equipments = data["equipment"]
     else:
         new_equipments = data["equipment"] + [equipment]
-    logger.info(f"new_equipment - {new_equipments}")
+    logger.info("new_equipment - %s", new_equipments)
 
     await state.update_data(equipment=new_equipments)
     await bot.edit_message_reply_markup(
@@ -162,6 +178,7 @@ async def text_generate_add_equipment(callback: CallbackQuery, state: FSMContext
 @user_router_bot.message(GetDataForCar.reason_for_sale)
 async def text_generate_get_reason_for_sale(message: Message, state: FSMContext):
     reason_for_sale = message.text
+    logger.info("User %s entered reason_for_sale", message.from_user.id)
     await state.update_data(reason_for_sale=reason_for_sale)
 
     await message.answer('Если хотите добавить чтото еще напишите через запятую.\nЕсли нет, напишите "нет":')
@@ -170,6 +187,7 @@ async def text_generate_get_reason_for_sale(message: Message, state: FSMContext)
 @user_router_bot.message(GetDataForCar.additional)
 async def text_generate_get_additional(message: Message, state: FSMContext):
     additional = message.text
+    logger.info("User %s entered additional", message.from_user.id)
     await state.update_data(additional=additional)
     data = await state.get_data()
     text = "Processes Data: "
@@ -178,9 +196,10 @@ async def text_generate_get_additional(message: Message, state: FSMContext):
     await message.answer(text)
 
     # request AI
+    logger.info("AI request started for user %s", message.from_user.id)
     resp = await ai.get_avito_text(data)
 
-    logger.info(f"Response AI: {resp}")
+    logger.info("AI response received for user - %s, length response - %s", message.from_user.id, len(resp))
     await message.answer(resp)
 
     await state.clear()
@@ -190,9 +209,11 @@ async def text_generate_get_additional(message: Message, state: FSMContext):
 
 @user_router_bot.message(F.text.casefold().endswith("профиль"))
 async def to_profile(message: Message, db: Session):
+    logger.info("Function to_profile called for user %s", message.from_user.id)
+    logger.info("Request in db get user user_id=%s", message.from_user.id)
     data_user = crud.get_user_tg_id(message.from_user.id, db)
+    logger.info("get_user succeeded user_id=%s", message.from_user.id)
     subscription_expires = data_user.subscription_expires
-    logger.info(f"data_user data_plat type - {type(data_user.data_plan)}")
     if data_user.subscription_expires is None:
         subscription_expires = "-"
     text = (
@@ -221,11 +242,8 @@ async def to_profile(message: Message, db: Session):
 
 @user_router_bot.message(F.text.casefold().in_(["подписки", "поменять тариф"]))
 async def to_data_plan(message: Message, db: Session):
-    data_user = crud.get_user_tg_id(message.from_user.id, db)
-    subscription_expires = data_user.subscription_expires
-    logger.info(f"data_user data_plat type - {type(data_user.data_plan)}")
-    if data_user.subscription_expires is None:
-        subscription_expires = "-"
+    logger.info("Function to_data_plan called")
+
     text = (
         "💎 <b>Тарифные планы</b>\n"
         "━━━━━━━━━━━━━━━━━━\n\n"
@@ -256,7 +274,8 @@ async def to_data_plan(message: Message, db: Session):
 
 
 @user_router_bot.callback_query(F.data.startswith("new_data_plan:view"))
-async def data_plan_pro(callback: CallbackQuery):
+async def view_data_plan(callback: CallbackQuery):
+    logger.info("Function view_data_plan called")
     await callback.answer()
     data_plan_type = callback.data.split(":")[2]
     pro_data = DATA_PLAN[f"{data_plan_type}"]
@@ -279,6 +298,7 @@ async def data_plan_pro(callback: CallbackQuery):
 
 @user_router_bot.message(F.text.casefold().endswith("назад на главную"))
 async def back_main(message: Message):
+    logger.info("Function back_main called")
     return await to_main(message)
 
 
