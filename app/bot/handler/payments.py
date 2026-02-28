@@ -21,6 +21,11 @@ async def data_plan_pay(callback: CallbackQuery, db: Session):
     user_id = callback.message.from_user.id
     data_plan_type = callback.data.split(":")[2]
     logger.info("User selected plan - %s, user_id=%s", data_plan_type, user_id)
+    if data_plan_type not in DATA_PLAN:
+        logger.warning("Data plan type not found in DATA_PLAN user_id=%s", user_id)
+        await callback.message.answer("Ошибка выбора тарифа")
+        return
+
     data_plan = DATA_PLAN[f"{data_plan_type}"]
 
     payload = str(uuid.uuid4())
@@ -53,27 +58,44 @@ async def process_pre_checkout(pre_checkout_query: PreCheckoutQuery):
 
 @payment_router_bot.message(F.successful_payment)
 async def successful_payment(message: Message, db: Session):
-    logger.info("Handler payment_successful for user user_id=%s", message.from_user.id)
+    user_id = message.from_user.id
+    logger.info("Handler payment_successful for user user_id=%s", user_id)
     payload = message.successful_payment.invoice_payload
     payment = crud.get_payment(payload, db)
 
     if not payment:
-        logger.error("Error payment: Payment record not found, payload=%s, user_id=%s", payload, message.from_user.id)
+        logger.error("Payment record not found, payload=%s, user_id=%s", payload, user_id)
         await message.answer("Ошибка платежа!")
         return
 
     if payment.status == Status_Pay.SUCCESS:
-        logger.warning("Payment already confirmed user_id=%s", message.from_user.id)
+        logger.warning("Payment already confirmed user_id=%s", user_id)
         await message.answer("Платеж уже прошел")
         return
 
-    await logger.info("Activating subscription plan=%s, user_id=%s", payment.plan, message.from_user.id)
-    await activate_subscription(payment.plan)
-    logger.info("Started request db update_payment_status user_id=%s", message.from_user.id)
-    crud.update_payment_status(payload, Status_Pay.SUCCESS, db)
-    logger.info("update_payment_status succeeded user_id=%s", message.from_user.id)
+    if message.successful_payment.total_amount != payment.amount:
+        logger.error("Payment amount mismatch user_id=%s payload=%s", user_id, payload)
+        await message.answer("Ошибка суммы платежа")
+        return
 
-    logger.info("Subscription activated user_id=%s", message.from_user.id)
+    if message.successful_payment.currency != "XTR":
+        logger.error("Payment incorrect currency user_id=%s payload=%s", user_id, payload)
+        await message.answer("Ошибка валюты")
+        return
+
+    logger.info("Activating subscription plan=%s, user_id=%s", payment.plan, user_id)
+    try:
+        await activate_subscription(user_id, payment.plan)
+    except:
+        logger.exception("Error activate subscription")
+        await message.answer("Ошибка активации подписки")
+        return
+
+    logger.info("Started request db update_payment_status user_id=%s", user_id)
+    crud.update_payment_status_success(payload, db)
+    logger.info("update_payment_status succeeded user_id=%s", user_id)
+
+    logger.info("Subscription activated user_id=%s", user_id)
     await message.answer("✅ Подписка активирована")
 
 

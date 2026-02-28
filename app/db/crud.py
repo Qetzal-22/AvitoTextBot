@@ -151,6 +151,15 @@ def update_payment_status(payload: str, new_status: Status_Pay, db: Session):
     logger.info("Update payment successful payload=%s", payload)
     return payment_db
 
+def update_payment_status_success(payload: str, db: Session):
+    logger.info("Update payment payload=%s", payload)
+
+    payment_db = db.query(Payment).filter(Payment.payload == payload, Payment.status == Status_Pay.PENDING).first()
+    payment_db.status = Status_Pay.SUCCESS
+    db.commit()
+    db.refresh(payment_db)
+    logger.info("Update payment successful payload=%s", payload)
+    return payment_db
 
 def get_payment(payload: str, db: Session):
     logger.debug("Get payment payload=%s", payload)
