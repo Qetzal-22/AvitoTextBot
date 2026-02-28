@@ -51,3 +51,8 @@ async def data_plan_pay_kb(data_plan: str):
     bld = InlineKeyboardBuilder()
     bld.button(text="Купить", callback_data=f"new_data_plan:pay:{data_plan}")
     return bld.as_markup()
+
+async def register_kb():
+    bld = InlineKeyboardBuilder()
+    bld.button(text="Регистрация", callback_data="register")
+    return bld.as_markup()
