@@ -5,9 +5,10 @@ from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.orm import Session
 import logging
+from datetime import datetime
 
 from app.bot.static import RegisterUser
-from app.bot.keyboard import main_kb, category_kb, equipment_kb, profile_kb, data_plan_kb, data_plan_pay_kb
+from app.bot.keyboard import main_kb, category_kb, equipment_kb, profile_kb, data_plan_kb, data_plan_pay_kb, register_kb
 from app.bot.static import GetDataForCar
 from app.ai.request import AI
 from app.db import crud
@@ -20,21 +21,47 @@ user_router_bot = Router()
 ai = AI()
 
 @user_router_bot.message(Command("register"))
-async def register(message: Message, state: FSMContext):
-    logger.info(f"Function register called for user_id=%s", message.from_user.id)
+async def register(message: Message, state: FSMContext, db: Session):
+    user_id = message.from_user.id
+    logger.info(f"Function register called for user_id=%s", user_id)
+    logger.info("DB request get_user user_id=%s", user_id)
+    user = crud.get_user_tg_id(user_id, db)
+    logger.info("DB response get_user user_id=%s", user_id)
+    if not user is None:
+        logger.warning(f"User already register user_id=%s", user_id)
+        await message.answer(f"Вы уже зарегистрированны!")
+        return
     await message.answer("Регистрация")
+    return await starting_register(message, state)
+
+
+async def starting_register(message, state):
+    logger.info("Started register user_id=%s", message.from_user.id)
     await message.answer("Напиши свой username: ")
     await state.set_state(RegisterUser.username)
 
+
 @user_router_bot.message(RegisterUser.username)
 async def get_username(message: Message, state: FSMContext, db: Session):
-    tg_id = message.from_user.id
+    user_id = message.from_user.id
     username = message.text
-    logger.info("User entered username user_id=%s", tg_id)
-    logger.info("Creating user user_id=%s", tg_id)
-    crud.create_user(tg_id, username, db)
+    if len(username) > 30:
+        logger.warning("User entered username is too long user_id=%s", user_id)
+        await message.answer("Длина username не должна превышать 30 символов!")
+        await message.answer("Попробуйте снова")
+        return await starting_register(message, state)
+    for ch in username:
+        if ch in " ,.":
+            logger.warning("User entered username with bad symbol user_id=%s", user_id)
+            await message.answer("Вы ввели запрещенный символ (\" \",.)!")
+            await message.answer("Попробуйте снова")
+            return await starting_register(message, state)
+    logger.info("User entered username user_id=%s", user_id)
+    logger.info("Creating user user_id=%s", user_id)
+    crud.create_user(user_id, username, db)
+    logger.info("Create user record user_id=%s", user_id)
     await state.clear()
-    logger.info("User created successful user_id=%s", tg_id)
+    logger.info("User register successful user_id=%s", user_id)
     await message.answer("Вы успешно зарегистрированны")
     await to_main(message)
 
@@ -43,15 +70,31 @@ async def get_username(message: Message, state: FSMContext, db: Session):
 ################################################ main ######################################################################
 ############################################################################################################################
 @user_router_bot.message(Command("main"))
-async def to_main(message: Message):
-    logger.info("Function to_main called for user_id=%s", message.from_user.id)
+async def to_main(message: Message, db: Session):
+    user_id = message.from_user.id
+    logger.info("Function to_main called for user_id=%s", user_id)
+    logger.info("DB request get_user user_id=%s", user_id)
+    user = crud.get_user_tg_id(user_id, db)
+    logger.info("DB response get_user user_id=%s", user_id)
+    if user is None:
+        logger.warning(f"User not found in DB user_id=%s", user_id)
+        await message.answer(f"Вы не зарегистрированны!", reply_markup=await register_kb())
+        return
     await message.answer("Гавная:", reply_markup=await main_kb())
 
 
 ############################################### generate text ##############################################################
 @user_router_bot.message(F.text.casefold().endswith("генерация текста"))
-async def text_generate_handler(message: Message):
-    logger.info("Start getting data for text generate for user_id=%s", message.from_user.id)
+async def text_generate_handler(message: Message, db: Session):
+    user_id = message.from_user.id
+    logger.info("Getting data for text generate user_id=%s", user_id)
+    logger.info("DB request get_user user_id=%s", user_id)
+    user = crud.get_user_tg_id(user_id, db)
+    logger.info("DB response get_user user_id=%s", user_id)
+    if user is None:
+        logger.warning(f"User not found in DB user_id=%s", user_id)
+        await message.answer(f"Вы не зарегистрированны!", reply_markup=await register_kb())
+        return
     await message.answer("Выберите категорию в которой хотите продать товар:", reply_markup=await category_kb())
 
 @user_router_bot.callback_query(F.data.startswith("car"))
@@ -84,8 +127,21 @@ async def text_generate_get_model(message: Message, state: FSMContext):
 
 @user_router_bot.message(GetDataForCar.year_manufacture)
 async def text_generate_get_year_manufacture(message: Message, state: FSMContext):
+    user_id = message.from_user.id
     year_manufacture = message.text
-    logger.info("User %s entered year_manufacture", message.from_user.id)
+    if not year_manufacture.isdigit():
+        logger.warning("User entered incorrect format year! user_id=%s", user_id)
+        await message.answer("Вы ввели неверный формат года.\nВ году не должно быть никаких символов кроме чисел!")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.year_manufacture)
+        return
+    if 1894 > int(year_manufacture) > datetime.now().year:
+        logger.warning("User entered incorrect format year! user_id=%s", user_id)
+        await message.answer(f"Вы ввели неверный формат года.\nГод должен быть цифрой в пределе от 1894 до {datetime.now().year} включительно.")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.year_manufacture)
+        return
+    logger.info("User %s entered year_manufacture", user_id)
     await state.update_data(year_manufacture=year_manufacture)
 
     await message.answer("Введите пробег:")
@@ -93,8 +149,22 @@ async def text_generate_get_year_manufacture(message: Message, state: FSMContext
 
 @user_router_bot.message(GetDataForCar.mileage)
 async def text_generate_get_mileage(message: Message, state: FSMContext):
+    user_id = message.from_user.id
     mileage = message.text
-    logger.info("User %s entered mileage", message.from_user.id)
+    if not mileage.isdigit():
+        logger.warning("User entered incorrect format mileage! user_id=%s", user_id)
+        await message.answer("Вы ввели неверный формат пробега.\nВ пробеге не должно быть никаких символов кроме чисел!")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.mileage)
+        return
+    if 0 > int(mileage):
+        logger.warning("User entered incorrect format mileage! user_id=%s", user_id)
+        await message.answer(f"Вы ввели неверный формат года.\nПробег не может быть ниже 0.")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.mileage)
+        return
+
+    logger.info("User %s entered mileage", user_id)
     await state.update_data(mileage=mileage)
 
     await message.answer("Введите кол-во владельцев:")
@@ -102,16 +172,42 @@ async def text_generate_get_mileage(message: Message, state: FSMContext):
 
 @user_router_bot.message(GetDataForCar.count_owner)
 async def text_generate_get_count_owner(message: Message, state: FSMContext):
+    user_id = message.from_user.id
     count_owner = message.text
-    logger.info("User %s entered count_owner", message.from_user.id)
-    await state.update_data(count_owner=count_owner)
+    if not count_owner.isdigit():
+        logger.warning("User entered incorrect format count_owner! user_id=%s", user_id)
+        await message.answer("Вы ввели неверный формат количества владельцев.\nВ числе владельцев не должно быть никаких символов кроме чисел!")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.count_owner)
+        return
+    if 0 > int(count_owner):
+        logger.warning("User entered incorrect format count_owner! user_id=%s", user_id)
+        await message.answer(f"Вы ввели неверный формат количества владельцев.\nЧисло владельцев не может быть ниже 0.")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.count_owner)
+        return
 
+    logger.info("User %s entered count_owner", user_id)
+    await state.update_data(count_owner=count_owner)
     await message.answer("Введите кол-во ДТП:")
     await state.set_state(GetDataForCar.count_accidents)
 
 @user_router_bot.message(GetDataForCar.count_accidents)
 async def text_generate_get_count_accidents(message: Message, state: FSMContext):
+    user_id = message.from_user.id
     count_accidents = message.text
+    if not count_accidents.isdigit():
+        logger.warning("User entered incorrect format count_accidents! user_id=%s", user_id)
+        await message.answer("Вы ввели неверный формат количества ДТП.\nВ числе ДТП не должно быть никаких символов кроме чисел!")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.count_accidents)
+        return
+    if 0 > int(count_accidents):
+        logger.warning("User entered incorrect format count_accidents! user_id=%s", user_id)
+        await message.answer(f"Вы ввели неверный формат количества ДТП.\nЧисло ДТП не может быть ниже 0.")
+        await message.answer("Попробуйте снова:")
+        await state.set_state(GetDataForCar.count_accidents)
+        return
     logger.info("User %s entered count_accidents", message.from_user.id)
     await state.update_data(count_accidents=count_accidents)
 
@@ -209,10 +305,18 @@ async def text_generate_get_additional(message: Message, state: FSMContext):
 
 @user_router_bot.message(F.text.casefold().endswith("профиль"))
 async def to_profile(message: Message, db: Session):
-    logger.info("Function to_profile called for user %s", message.from_user.id)
-    logger.info("Request in db get user user_id=%s", message.from_user.id)
+    user_id = message.from_user.id
+    logger.info("Function to_profile called for user %s", user_id)
+    logger.info("DB request get_user user_id=%s", user_id)
+    user = crud.get_user_tg_id(user_id, db)
+    logger.info("DB response get_user user_id=%s", user_id)
+    if user is None:
+        logger.warning(f"User not found in DB user_id=%s", user_id)
+        await message.answer(f"Вы не зарегистрированны!", reply_markup=await register_kb())
+        return
+    logger.info("Request in db get user user_id=%s", user_id)
     data_user = crud.get_user_tg_id(message.from_user.id, db)
-    logger.info("get_user succeeded user_id=%s", message.from_user.id)
+    logger.info("get_user succeeded user_id=%s", user_id)
     subscription_expires = data_user.subscription_expires
     if data_user.subscription_expires is None:
         subscription_expires = "-"
@@ -242,8 +346,15 @@ async def to_profile(message: Message, db: Session):
 
 @user_router_bot.message(F.text.casefold().in_(["подписки", "поменять тариф"]))
 async def to_data_plan(message: Message, db: Session):
-    logger.info("Function to_data_plan called")
-
+    user_id = message.from_user.id
+    logger.info("Function to_data_plan called user_id=%s", user_id)
+    logger.info("DB request get_user user_id=%s", user_id)
+    user = crud.get_user_tg_id(user_id, db)
+    logger.info("DB response get_user user_id=%s", user_id)
+    if user is None:
+        logger.warning(f"User not found in DB user_id=%s", user_id)
+        await message.answer(f"Вы не зарегистрированны!", reply_markup=await register_kb())
+        return
     text = (
         "💎 <b>Тарифные планы</b>\n"
         "━━━━━━━━━━━━━━━━━━\n\n"
@@ -275,7 +386,8 @@ async def to_data_plan(message: Message, db: Session):
 
 @user_router_bot.callback_query(F.data.startswith("new_data_plan:view"))
 async def view_data_plan(callback: CallbackQuery):
-    logger.info("Function view_data_plan called")
+    user_id = callback.message.from_user.id
+    logger.info("Function view_data_plan called user_id=%s", user_id)
     await callback.answer()
     data_plan_type = callback.data.split(":")[2]
     pro_data = DATA_PLAN[f"{data_plan_type}"]
@@ -298,9 +410,14 @@ async def view_data_plan(callback: CallbackQuery):
 
 @user_router_bot.message(F.text.casefold().endswith("назад на главную"))
 async def back_main(message: Message):
-    logger.info("Function back_main called")
+    logger.info("Function back_main called user_id=%s", message.from_user.id)
     return await to_main(message)
 
+@user_router_bot.callback_query(F.data.startswith("register"))
+async def process_register_callback(callback: CallbackQuery, state: FSMContext, db: Session):
+    logger.info("Function back_main called user_id=%s", callback.message.from_user.id)
+    await callback.answer()
+    return await register(callback.message, state, db)
 
 ############################################################################################################################
 ############################################################################################################################
