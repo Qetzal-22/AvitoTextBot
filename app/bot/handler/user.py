@@ -63,7 +63,7 @@ async def get_username(message: Message, state: FSMContext, db: Session):
     await state.clear()
     logger.info("User register successful user_id=%s", user_id)
     await message.answer("Вы успешно зарегистрированны")
-    await to_main(message)
+    await to_main(message, db)
 
 
 ############################################################################################################################
@@ -135,7 +135,8 @@ async def text_generate_get_year_manufacture(message: Message, state: FSMContext
         await message.answer("Попробуйте снова:")
         await state.set_state(GetDataForCar.year_manufacture)
         return
-    if 1894 > int(year_manufacture) > datetime.now().year:
+
+    if 1894 > int(year_manufacture) or int(year_manufacture) > datetime.now().year:
         logger.warning("User entered incorrect format year! user_id=%s", user_id)
         await message.answer(f"Вы ввели неверный формат года.\nГод должен быть цифрой в пределе от 1894 до {datetime.now().year} включительно.")
         await message.answer("Попробуйте снова:")
@@ -144,7 +145,7 @@ async def text_generate_get_year_manufacture(message: Message, state: FSMContext
     logger.info("User %s entered year_manufacture", user_id)
     await state.update_data(year_manufacture=year_manufacture)
 
-    await message.answer("Введите пробег:")
+    await message.answer("Введите пробег (km):")
     await state.set_state(GetDataForCar.mileage)
 
 @user_router_bot.message(GetDataForCar.mileage)
@@ -286,13 +287,10 @@ async def text_generate_get_additional(message: Message, state: FSMContext):
     logger.info("User %s entered additional", message.from_user.id)
     await state.update_data(additional=additional)
     data = await state.get_data()
-    text = "Processes Data: "
-    for key, value in data.items():
-        text += f"\n{key}: {value}"
-    await message.answer(text)
 
     # request AI
     logger.info("AI request started for user %s", message.from_user.id)
+    await message.answer("Генерируем текст... подождите...")
     resp = await ai.get_avito_text(data)
 
     logger.info("AI response received for user - %s, length response - %s", message.from_user.id, len(resp))
@@ -409,9 +407,9 @@ async def view_data_plan(callback: CallbackQuery):
 ############################################################################################################################
 
 @user_router_bot.message(F.text.casefold().endswith("назад на главную"))
-async def back_main(message: Message):
+async def back_main(message: Message, db: Session):
     logger.info("Function back_main called user_id=%s", message.from_user.id)
-    return await to_main(message)
+    return await to_main(message, db)
 
 @user_router_bot.callback_query(F.data.startswith("register"))
 async def process_register_callback(callback: CallbackQuery, state: FSMContext, db: Session):
