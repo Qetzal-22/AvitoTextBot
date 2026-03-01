@@ -32,6 +32,7 @@ class User(Base):
 
     total_request = Column(Integer, default=0)
     monthly_request = Column(Integer, default=0)
+    daily_request = Column(Integer, default=0)
 
     is_active = Column(Boolean, default=True)
 
