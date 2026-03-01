@@ -1,5 +1,4 @@
 import logging
-from gc import callbacks
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 

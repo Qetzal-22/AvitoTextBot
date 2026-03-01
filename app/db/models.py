@@ -1,5 +1,3 @@
-from os import truncate
-
 from sqlalchemy import Column, Integer, String, Enum, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
 import enum

@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
 import datetime
+from datetime import timedelta
 import logging
 
-from sqlalchemy.orm.base import state_str
 
-from app.db.database import SessionLocal
 from app.db.models import User, Request, Payment, Data_Plan, Status_Pay
 
 logger = logging.getLogger(__name__)
@@ -23,9 +22,14 @@ def get_user_tg_id(tg_id: int, db: Session):
     user_db = db.query(User).filter(User.tg_id == tg_id).first()
     return user_db
 
+def get_users(db: Session):
+    logger.debug("Get users")
+    users_db = db.query(User).all()
+    return users_db
+
 def get_users_end_sub(db: Session):
     logger.debug("Get users")
-    users_db = db.query(User).filter(User.subscription_expires <= datetime.datetime.now()).all()
+    users_db = db.query(User).filter((User.subscription_expires <= datetime.datetime.now()) & (User.subscription_expires > (datetime.datetime.now() - timedelta(days=182)))).all()
     return users_db
 
 
@@ -87,7 +91,7 @@ def update_user_add_request(tg_id: int, db: Session):
     user_db = db.query(User).filter(User.tg_id == tg_id).first()
     user_db.total_request = user_db.total_request + 1
     user_db.monthly_request = user_db.monthly_request + 1
-    user_db.monthly_request = user_db.daily_request + 1
+    user_db.daily_request = user_db.daily_request + 1
     db.commit()
     db.refresh(user_db)
     logger.info("Update user successful tg_id=%s", tg_id)

@@ -8,7 +8,7 @@ import logging
 from app.config.config import DATA_PLAN
 from app.db import crud
 from app.db.models import Status_Pay, Data_Plan
-from app.utils.user import activate_subscription
+from app.services.user_services import activate_subscription
 
 payment_router_bot = Router()
 
