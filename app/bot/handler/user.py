@@ -80,7 +80,7 @@ async def to_main(message: Message, db: Session):
         logger.warning(f"User not found in DB user_id=%s", user_id)
         await message.answer(f"Вы не зарегистрированны!", reply_markup=await register_kb())
         return
-    await message.answer("Гавная:", reply_markup=await main_kb())
+    await message.answer("Главная:", reply_markup=await main_kb())
 
 
 ############################################### generate text ##############################################################
@@ -282,19 +282,22 @@ async def text_generate_get_reason_for_sale(message: Message, state: FSMContext)
     await state.set_state(GetDataForCar.additional)
 
 @user_router_bot.message(GetDataForCar.additional)
-async def text_generate_get_additional(message: Message, state: FSMContext):
+async def text_generate_get_additional(message: Message, state: FSMContext, db: Session):
+    user_id = message.from_user.id
     additional = message.text
-    logger.info("User %s entered additional", message.from_user.id)
+    logger.info("User %s entered additional", user_id)
     await state.update_data(additional=additional)
     data = await state.get_data()
 
     # request AI
-    logger.info("AI request started for user %s", message.from_user.id)
+    logger.info("AI request started for user %s", user_id)
     await message.answer("Генерируем текст... подождите...")
     resp = await ai.get_avito_text(data)
 
-    logger.info("AI response received for user - %s, length response - %s", message.from_user.id, len(resp))
+    logger.info("AI response received for user - %s, length response - %s", user_id, len(resp))
     await message.answer(resp)
+    crud.create_request(user_id, resp, db)
+    crud.update_user_add_request(user_id, db)
 
     await state.clear()
 
@@ -333,6 +336,9 @@ async def to_profile(message: Message, db: Session):
 
         f"📊 <b>Запросов в этом месяце:</b>\n"
         f"{data_user.monthly_request}\n\n"
+        
+        f"📊 <b>Запросов за день:</b>\n"
+        f"{data_user.daily_request}\n\n"
 
         "━━━━━━━━━━━━━━━━━━\n"
         "<i>Avito Text Bot</i>"
