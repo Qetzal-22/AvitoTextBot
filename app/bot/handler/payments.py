@@ -85,7 +85,7 @@ async def successful_payment(message: Message, db: Session):
 
     logger.info("Activating subscription plan=%s, user_id=%s", payment.plan, user_id)
     try:
-        await activate_subscription(user_id, payment.plan)
+        await activate_subscription(user_id, payment.plan, db)
     except:
         logger.exception("Error activate subscription")
         await message.answer("Ошибка активации подписки")
