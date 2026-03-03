@@ -2,6 +2,10 @@ from aiogram import F, types, Bot
 from aiogram.types import Message, BotCommand
 from aiogram.filters import Command
 
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from uvicorn import Config, Server
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -12,8 +16,13 @@ from app.bot.bot import bot, dp
 from app.bot.handler.user import user_router_bot
 from app.bot.handler.payments import payment_router_bot
 from app.bot.keyboard import register_kb
+from app.api.routers import dashboard
 from app.config.logging_config import setup_logging
 from app.scheduler.jobs import check_subscriptions, reset_monthly_requests, reset_daily_requests
+
+app = FastAPI()
+app.mount("/static", StaticFiles(directory="app/api/static"), name="static")
+app.include_router(dashboard.dashboard_router_api)
 
 
 @dp.message(Command("start"))
@@ -56,6 +65,10 @@ async def start_bot():
     dp.include_router(payment_router_bot)
     await dp.start_polling(bot)
 
+async def start_api():
+    config = Config(app, host="0.0.0.0", port=8000, log_level="info")
+    server = Server(config)
+    await server.serve()
 
 async def start_scheduler():
     scheduler = AsyncIOScheduler(timezone="Asia/Vladivostok")
@@ -83,8 +96,10 @@ async def start_scheduler():
 
 
 async def main():
+    logger.info("Admin panel: http://localhost:8000/dashboard")
     await asyncio.gather(
         start_bot(),
+        start_api(),
         start_scheduler()
     )
 
