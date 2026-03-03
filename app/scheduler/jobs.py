@@ -3,7 +3,7 @@ import logging
 
 from app.db import crud
 from app.db.database import SessionLocal
-from app.services.user_services import disable_subscription
+from app.services.user_service import disable_subscription
 from app.services.notification_services import send_notification_ended_sub
 
 logger = logging.getLogger(__name__)
