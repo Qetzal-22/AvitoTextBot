@@ -1,6 +1,9 @@
+from aiohttp import request
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 import datetime
 from datetime import timedelta
+from datetime import datetime
 import logging
 
 
@@ -32,6 +35,12 @@ def get_users_end_sub(db: Session):
     users_db = db.query(User).filter((User.subscription_expires <= datetime.datetime.now()) & (User.subscription_expires > (datetime.datetime.now() - timedelta(days=182)))).all()
     return users_db
 
+def get_activity_users(db: Session):
+    logger.debug("Get activity users")
+
+    one_week_ago = datetime.now() - timedelta(weeks=1)
+    count_activity_users = db.query(func.count(func.distinct(Request.user_id))).filter(Request.create_at > one_week_ago).scalar()
+    return count_activity_users
 
 def update_user_tg_id(tg_id: int,
                       db: Session,
@@ -146,6 +155,26 @@ def get_request(user_id: int, db: Session):
     request_db = db.query(Request).filter(Request.user_id == user_id).first()
     return request_db
 
+def get_today_requests(db: Session):
+    logger.debug("Get requests today")
+
+    one_day_ago = datetime.now() - timedelta(days=1)
+    count_request = db.query(func.count(Request.id)).filter(Request.create_at > one_day_ago).scalar()
+    return count_request
+
+def get_request_for_week(db: Session):
+    logger.debug("Get request for week")
+    one_week_ago = datetime.now() - timedelta(weeks=1)
+    request_for_week = db.query(Request).filter(Request.create_at > one_week_ago).all()
+    return request_for_week
+
+def get_requests_sort_date(db: Session):
+    logger.debug("Get requset sort data")
+    one_week_ago = datetime.now() - timedelta(weeks=1)
+    requests = db.query(Request).order_by(Request.create_at.desc()).filter(Request.create_at > one_week_ago).limit(5).all()
+    return requests
+
+
 def create_payment(payload: str, user_id: int, amount: int, status: Status_Pay, plan: Data_Plan, db: Session):
     logger.info(
         "Create payment payload=%s user_id=%s amount=%s status=%s plan=%s",
@@ -188,3 +217,21 @@ def get_payment(payload: str, db: Session):
 
     payment_db = db.query(Payment).filter(Payment.payload == payload).first()
     return payment_db
+
+def get_monthly_income(db: Session):
+    logger.debug("Get monthly income")
+    one_month_ago = datetime.now() - timedelta(days=31)
+    income = db.query(Payment.amount).filter((Payment.create_at > one_month_ago) & (Payment.status == Status_Pay.SUCCESS)).all()
+    return income
+
+def get_income_for_week(db: Session):
+    logger.debug("Get income for week")
+    one_week_ago = datetime.now() - timedelta(weeks=1)
+    income_for_week = db.query(Payment).filter((Payment.create_at > one_week_ago) & (Payment.status == Status_Pay.SUCCESS)).all()
+    return income_for_week
+
+def get_transactions_sort_date(db: Session):
+    logger.debug("Get transactions sort date")
+    one_week_ago = datetime.now() - timedelta(weeks=1)
+    transactions = db.query(Payment).order_by(Payment.create_at.desc()).filter((Payment.create_at > one_week_ago) & (Payment.status == Status_Pay.SUCCESS)).limit(5).all()
+    return transactions
