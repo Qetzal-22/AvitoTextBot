@@ -21,7 +21,6 @@ from app.config.logging_config import setup_logging
 from app.scheduler.jobs import check_subscriptions, reset_monthly_requests, reset_daily_requests
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="app/api/static"), name="static")
 app.include_router(dashboard.dashboard_router_api)
 
 
