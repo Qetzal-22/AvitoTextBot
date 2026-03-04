@@ -8,6 +8,12 @@ from app.db.models import Data_Plan
 
 logger = logging.getLogger(__name__)
 
+def get_users(db: Session):
+    logger.info("DB request get_users")
+    users = crud.get_users(db)
+    logger.info("DB successful response get_users")
+    return users
+
 async def disable_subscription(db: Session, user_id: int):
     logger.info("Disable subscription user_id=%s", user_id)
     subscription_expires = datetime.now() - timedelta(days=365)
