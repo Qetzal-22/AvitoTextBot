@@ -155,6 +155,11 @@ def get_request(user_id: int, db: Session):
     request_db = db.query(Request).filter(Request.user_id == user_id).first()
     return request_db
 
+def get_requests(db: Session):
+    logger.debug("Get requests")
+    requests = db.query(Request).all()
+    return requests
+
 def get_today_requests(db: Session):
     logger.debug("Get requests today")
 
