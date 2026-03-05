@@ -8,6 +8,12 @@ from app.db.database import SessionLocal
 
 logger = logging.getLogger(__name__)
 
+def get_payments(db: Session):
+    logger.info("DB request get_payments")
+    payments = crud.get_payments(db)
+    logger.info("DB successful response get_payments")
+    return payments
+
 def get_monthly_income(db: Session):
     logger.info("DB request get_monthly_income")
     income = crud.get_monthly_income(db)
