@@ -218,6 +218,11 @@ def get_payment(payload: str, db: Session):
     payment_db = db.query(Payment).filter(Payment.payload == payload).first()
     return payment_db
 
+def get_payments(db: Session):
+    logger.debug("Get payments")
+    payments = db.query(Payment).all()
+    return payments
+
 def get_monthly_income(db: Session):
     logger.debug("Get monthly income")
     one_month_ago = datetime.now() - timedelta(days=31)
