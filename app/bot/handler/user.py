@@ -14,6 +14,7 @@ from app.ai.request import AI
 from app.db import crud
 from app.db.models import Data_Plan
 from app.config.config import DATA_PLAN
+from app.services import user_service
 
 logger = logging.getLogger(__name__)
 user_router_bot = Router()
@@ -284,6 +285,7 @@ async def text_generate_get_reason_for_sale(message: Message, state: FSMContext)
 @user_router_bot.message(GetDataForCar.additional)
 async def text_generate_get_additional(message: Message, state: FSMContext, db: Session):
     user_id = message.from_user.id
+    user = user_service.get_user(db, user_id)
     additional = message.text
     logger.info("User %s entered additional", user_id)
     await state.update_data(additional=additional)
@@ -296,8 +298,8 @@ async def text_generate_get_additional(message: Message, state: FSMContext, db: 
 
     logger.info("AI response received for user - %s, length response - %s", user_id, len(resp))
     await message.answer(resp)
-    crud.create_request(user_id, resp, db)
-    crud.update_user_add_request(user_id, db)
+    crud.create_request(user.id, resp, db)
+    crud.update_user_add_request(user.id, db)
 
     await state.clear()
 
