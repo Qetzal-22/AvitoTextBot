@@ -14,6 +14,12 @@ def get_users(db: Session):
     logger.info("DB successful response get_users")
     return users
 
+def get_user(db: Session, user_id: int):
+    logger.info("DB request get_user")
+    users = crud.get_user_tg_id(user_id, db)
+    logger.info("DB successful response get_user")
+    return users
+
 async def disable_subscription(db: Session, user_id: int):
     logger.info("Disable subscription user_id=%s", user_id)
     subscription_expires = datetime.now() - timedelta(days=365)
