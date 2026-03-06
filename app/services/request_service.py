@@ -7,6 +7,12 @@ from app.db.database import SessionLocal
 
 logger = logging.getLogger(__name__)
 
+def get_requests(db: Session):
+    logger.info("DB request get_requests")
+    requests = crud.get_requests(db)
+    logger.info("DB successful response get_requests")
+    return requests
+
 def get_request_today(db: Session):
     logger.info("DB Request get_request_today")
     request_today = crud.get_today_requests(db)
@@ -43,6 +49,8 @@ def get_requests_ai(db: Session):
     requests = crud.get_requests_sort_date(db)
     requests_ai = []
     for key, request in enumerate(requests):
+        logger.info("get_requests_ai: request.id=%s request.user_id=%s", request.id, request.user_id)
+        logger.info("get_requests_ai: request.user=%s", request.user)
         request_ai = {}
         request_ai["id"] = key+1
         request_ai["user_id"] = request.user_id
