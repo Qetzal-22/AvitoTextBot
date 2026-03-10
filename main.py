@@ -16,7 +16,7 @@ from app.bot.bot import bot, dp
 from app.bot.handler.user import user_router_bot
 from app.bot.handler.payments import payment_router_bot
 from app.bot.keyboard import register_kb
-from app.api.routers import dashboard, user, request, payment
+from app.api.routers import dashboard, user, request, payment, login
 from app.config.logging_config import setup_logging
 from app.scheduler.jobs import check_subscriptions, reset_monthly_requests, reset_daily_requests
 
@@ -25,6 +25,7 @@ app.include_router(dashboard.dashboard_router_api)
 app.include_router(user.user_router_api)
 app.include_router(request.request_router_api)
 app.include_router(payment.payment_router_api)
+app.include_router(login.login_router_api)
 
 
 @dp.message(Command("start"))
