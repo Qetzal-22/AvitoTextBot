@@ -25,6 +25,11 @@ def get_user_tg_id(tg_id: int, db: Session):
     user_db = db.query(User).filter(User.tg_id == tg_id).first()
     return user_db
 
+def get_user(id: int, db: Session):
+    logger.debug("Get user id=%s", id)
+    user_db = db.query(User).filter(User.id == id).first()
+    return user_db
+
 def get_users(db: Session):
     logger.debug("Get users")
     users_db = db.query(User).all()
