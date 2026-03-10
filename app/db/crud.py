@@ -201,15 +201,24 @@ def create_payment(payload: str, user_id: int, amount: int, status: Status_Pay, 
     logger.info("Create payment successful user_id=%s payload=%s", user_id, payload)
     return payment_db
 
-def update_payment_status(payload: str, new_status: Status_Pay, db: Session):
-    logger.info("Update payment payload=%s new_status=%s", payload, new_status)
-
-    payment_db = db.query(Payment).filter(Payment.payload == payload).first()
+def update_payment_status(id: str, new_status: Status_Pay, db: Session):
+    logger.info("Update payment payload=%s new_status=%s", id, new_status)
+    payment_db = db.query(Payment).filter(Payment.id == id).first()
     payment_db.status = new_status
     db.commit()
     db.refresh(payment_db)
-    logger.info("Update payment successful payload=%s", payload)
+    logger.info("Update payment successful payload=%s", id)
     return payment_db
+
+def update_payment_product(id: int, new_product: Data_Plan, db: Session):
+    logger.info("Update payment payload=%s new_status=%s", id, new_product)
+    payment_db = db.query(Payment).filter(Payment.id == id).first()
+    payment_db.plan = new_product
+    db.commit()
+    db.refresh(payment_db)
+    logger.info("Update payment successful payload=%s", id)
+    return payment_db
+
 
 def update_payment_status_success(payload: str, db: Session):
     logger.info("Update payment payload=%s", payload)
@@ -221,10 +230,10 @@ def update_payment_status_success(payload: str, db: Session):
     logger.info("Update payment successful payload=%s", payload)
     return payment_db
 
-def get_payment(payload: str, db: Session):
-    logger.debug("Get payment payload=%s", payload)
+def get_payment(id: int, db: Session):
+    logger.debug("Get payment id=%s", id)
 
-    payment_db = db.query(Payment).filter(Payment.payload == payload).first()
+    payment_db = db.query(Payment).filter(Payment.id == id).first()
     return payment_db
 
 def get_payments(db: Session):
