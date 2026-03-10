@@ -180,8 +180,7 @@ def get_request_for_week(db: Session):
 
 def get_requests_sort_date(db: Session):
     logger.debug("Get requset sort data")
-    one_week_ago = datetime.now() - timedelta(weeks=1)
-    requests = db.query(Request).order_by(Request.create_at.desc()).filter(Request.create_at > one_week_ago).limit(5).all()
+    requests = db.query(Request).order_by(Request.create_at.desc()).limit(5).all()
     return requests
 
 
@@ -247,6 +246,5 @@ def get_income_for_week(db: Session):
 
 def get_transactions_sort_date(db: Session):
     logger.debug("Get transactions sort date")
-    one_week_ago = datetime.now() - timedelta(weeks=1)
-    transactions = db.query(Payment).order_by(Payment.create_at.desc()).filter((Payment.create_at > one_week_ago) & (Payment.status == Status_Pay.SUCCESS)).limit(5).all()
+    transactions = db.query(Payment).order_by(Payment.create_at.desc()).filter(Payment.status == Status_Pay.SUCCESS).limit(5).all()
     return transactions
