@@ -5,6 +5,7 @@ import logging
 
 from app.db import crud
 from app.db.database import SessionLocal
+from app.db.models import Data_Plan, Status_Pay
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,12 @@ def get_payments(db: Session):
     payments = crud.get_payments(db)
     logger.info("DB successful response get_payments")
     return payments
+
+def get_payment(db: Session, id: int):
+    logger.info("DB request get_payment")
+    payment = crud.get_payment(id, db)
+    logger.info("DB successful response get_payment")
+    return payment
 
 def get_monthly_income(db: Session):
     logger.info("DB request get_monthly_income")
@@ -63,3 +70,13 @@ def get_transactions(db: Session):
         transaction["date"] = payment.create_at
         transactions.append(transaction)
     return transactions
+
+def update_product(db: Session, id: int, product: Data_Plan):
+    logger.info("DB UPDATE request update_payment_product payment_id=%s", id)
+    crud.update_payment_product(id, product, db)
+    logger.info("DB successful response update_payment payment_id=%s", id)
+
+def update_status(db: Session, id: int, status: Status_Pay):
+    logger.info("DB UPDATE request update_status payment_id=%s", id)
+    crud.update_payment_status(id, status, db)
+    logger.info("DB successful response update_status payment_id=%s", id)
