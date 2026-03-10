@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Avito Text Bot</title>
+</head>
+<body class="bg-black text-white">
+<div class="container-fluid">
+    <div class="row">
+        <div class="menu col-md-2 p-3 rounded bg-dark text-white">
+            <h1 class="md-3">Menu</h1>
+            <div class="btn-group-vertical w-100" role="group" aria-label="Vertical radio toggle button group">
+                <input type="radio" class="btn-check" name="vbtn-radio" id="vbtn-radio1" autocomplete="off">
+                <a href="/dashboard" class="btn btn-outline-secondary text-white w-100 py-3">Dash Board</a>
+                <input type="radio" class="btn-check" name="vbtn-radio" id="vbtn-radio2" autocomplete="off">
+                <a href="/users" class="btn btn-outline-secondary text-white w-100 py-3">Users</a>
+                <input type="radio" class="btn-check" name="vbtn-radio" id="vbtn-radio21" autocomplete="off" checked>
+                <a class="btn btn-outline-info text-white w-75 py-1">User</a>
+                <input type="radio" class="btn-check" name="vbtn-radio" id="vbtn-radio3" autocomplete="off">
+                <a href="/payments" class="btn btn-outline-secondary text-white w-100 py-3">Payments</a>
+                <input type="radio" class="btn-check" name="vbtn-radio" id="vbtn-radio4" autocomplete="off">
+                <a href="/requests" class="btn btn-outline-secondary text-white w-100 py-3">Requests</a>
+            </div>
+        </div>
+
+        <div class="content col-md-10">
+            <h1 class="mt-2 text-center">User</h1>
+            <div class="main-data">
+                <div class="row mt-4 p-4">
+                    <div class="col-md-4 h-100">
+                        <div class="user_id">
+                            <div class="card bg-dark p-1 border border-info">
+                                <div class="row g-0 bg-dark">
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h2 class="card-title text-white"><i class="bi bi-asterisk text-info"></i>
+                                                {{ user["id"] }}
+                                            </h2>
+                                            <p class="card-text text-info">User ID</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 h-100">
+                        <div class="user_name">
+                            <div class="card bg-dark p-1 border border-info">
+                                <div class="row g-0 bg-dark">
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h2 class="card-title text-white"><i class="bi bi-person text-info"></i> {{
+                                                user["username"] }}
+                                            </h2>
+                                            <p class="card-text text-info">Username</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 h-100">
+                        <div class="user_data_plan">
+                            <div class="card bg-dark p-1 border border-info">
+                                <div class="row g-0 bg-dark">
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h2 class="card-title text-white"><i class="bi bi-plus text-info"></i> {{
+                                                user["data_plan"].value.upper() }}
+                                            </h2>
+                                            <p class="card-text text-info">Data Plan</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="other-data p-4">
+                <div class="bg-dark rounded p-3">
+                    <h2>Other data</h2>
+                    <table class="table table-dark table-hover rounded">
+                        <thead>
+                        <tr>
+                            <th scope="col">Type</th>
+                            <th scope="col">Parameters</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for key, value in user.items() %}
+                        <tr>
+                            {% if key in ("payments", "requests", "count_requests", "count_payments", "id", "username", "data_plan") %}
+
+                            {% else %}
+                            <td scope="row">{{ view_data[key] }}</td>
+                            <td scope="row">{{ value }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <td scope="row">Count requests</td>
+                            <td scope="row">{{ user["count_requests"] }}</td>
+                        </tr>
+                        <tr>
+                            <td scope="row">Count payments</td>
+                            <td scope="row">{{ user["count_payments"] }}</td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+
+            <div class="requests-payments p-4">
+                <div class="row">
+                    <div class="requests col-md-5">
+                        <div class="p-3 bg-dark rounded">
+                            <h2>Request</h2>
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Length request</th>
+                                    <th scope="col">Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for request in user["requests"] %}
+                                <tr>
+                                    <td scope="row">{{ request.id }}</td>
+                                    <td scope="row">{{ request.request }}</td>
+                                    <td scope="row">{{ request.create_at }}</td>
+                                </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                    <div class="payments col-md-7">
+                        <div class="p-3 bg-dark rounded">
+                            <h2>Payments</h2>
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Payload</th>
+                                    <th scope="col">Product</th>
+                                    <th scope="col">Prise</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for payment in user["payments"] %}
+                                <tr>
+                                    <td scope="row">{{ payment.id }}</td>
+                                    <td scope="row">{{ payment.payload }}</td>
+                                    <td scope="row">{{ payment.plan.value.upper() }}</td>
+                                    <td scope="row">{{ payment.amount }}</td>
+                                    <td scope="row">{{ payment.status.value.upper() }}</td>
+                                    <td scope="row">{{ payment.create_at }}</td>
+                                </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
