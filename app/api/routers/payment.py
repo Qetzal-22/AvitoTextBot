@@ -15,25 +15,37 @@ logger = logging.getLogger(__name__)
 
 @payment_router_api.get("/")
 def get_payments(request: Request, db: Session = Depends(get_db)):
-    check_auth(request)
+    auth = check_auth(request)
+    if auth:
+        return auth
+
     payments = finance_service.get_payments(db)
     payments_data = enumerate(payments)
     return templates.TemplateResponse("payments.html", {"request": request, "payments": payments_data})
 
 @payment_router_api.get("/{id}")
 def get_payment(request: Request, db: Session = Depends(get_db), id: int = None):
-    check_auth(request)
+    auth = check_auth(request)
+    if auth:
+        return auth
+
     payment = finance_service.get_payment(db, id)
     return templates.TemplateResponse("payment.html", {"request": request, "payment": payment})
 
 @payment_router_api.post("/edit-product")
 def change_product(request: Request, payment_id: int = Form(...), product: Data_Plan = Form(...), db: Session = Depends(get_db)):
-    check_auth(request)
+    auth = check_auth(request)
+    if auth:
+        return auth
+
     finance_service.update_product(db, payment_id, product)
     return RedirectResponse(url=f"/payments/{payment_id}", status_code=303)
 
 @payment_router_api.post("/edit-status")
 def change_status(request: Request, payment_id: int = Form(...), status: Status_Pay = Form(...), db: Session = Depends(get_db)):
-    check_auth(request)
+    auth = check_auth(request)
+    if auth:
+        return auth
+
     finance_service.update_status(db, payment_id, status)
     return RedirectResponse(url=f"/payments/{payment_id}", status_code=303)

@@ -12,7 +12,10 @@ logger = logging.getLogger(__name__)
 
 @request_router_api.get("/")
 def get_request(request: Request, db: Session = Depends(get_db)):
-    check_auth(request)
+    auth = check_auth(request)
+    if auth:
+        return auth
+
     requests = request_service.get_requests(db)
     requests_data = enumerate(requests)
     return templates.TemplateResponse("requests.html", {"request": request, "requests": requests_data})

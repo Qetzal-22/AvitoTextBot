@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 @dashboard_router_api.get("/")
 def get_dashboard(request: Request, db: Session = Depends(get_db)):
-    check_auth(request)
+    auth = check_auth(request)
+    if auth:
+        return auth
+
     activity_users = get_activity_users(db)
     monthly_income = get_monthly_income(db)
     request_today = get_request_today(db)
