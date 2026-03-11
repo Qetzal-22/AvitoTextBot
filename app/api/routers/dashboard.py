@@ -10,6 +10,7 @@ from app.db.database import get_db
 from app.services.user_service import get_activity_users
 from app.services.finance_service import get_monthly_income, get_income_for_week, get_transactions
 from app.services.request_service import get_request_today, get_request_for_week, get_requests_ai
+from app.services.api_service import check_auth
 from app.utils.datetime_utils import get_weekday_start_now
 
 dashboard_router_api = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 @dashboard_router_api.get("/")
 def get_dashboard(request: Request, db: Session = Depends(get_db)):
+    check_auth(request)
     activity_users = get_activity_users(db)
     monthly_income = get_monthly_income(db)
     request_today = get_request_today(db)
