@@ -6,4 +6,5 @@ __pycache__/
 *.db
 *.sqbpro
 *.drawio.bkp
+*.drawio.dtmp
 test.py
