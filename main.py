@@ -1,10 +1,14 @@
+import os
+
 from aiogram import F, types, Bot
 from aiogram.types import Message, BotCommand
 from aiogram.filters import Command
+from dotenv import load_dotenv
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from uvicorn import Config, Server
+from starlette.middleware.sessions import SessionMiddleware
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -20,6 +24,8 @@ from app.api.routers import dashboard, user, request, payment, login
 from app.config.logging_config import setup_logging
 from app.scheduler.jobs import check_subscriptions, reset_monthly_requests, reset_daily_requests
 
+load_dotenv()
+
 app = FastAPI()
 app.include_router(dashboard.dashboard_router_api)
 app.include_router(user.user_router_api)
@@ -27,6 +33,10 @@ app.include_router(request.request_router_api)
 app.include_router(payment.payment_router_api)
 app.include_router(login.login_router_api)
 
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET_KEY")
+)
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
