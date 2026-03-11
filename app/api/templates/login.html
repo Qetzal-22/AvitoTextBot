@@ -9,29 +9,28 @@
     <title>Avito Text Bot</title>
 </head>
 <body class="bg-black text-white">
-<div class="container-fluid">
-    <div class="logining-plane p-4 mt-5">
-        <div class="bg-dark rounded p-4 h-100">
+<div class="container-fluid d-flex justify-content-center">
+    <div class="logining-plane">
+        <div class="bg-dark rounded p-4 vh-100 d-flex flex-column justify-content-center align-items-center vh-100">
             <h1 class="text-center">Login</h1>
             <form method="post" action="/login">
                 <div class="row">
-                    <div class="col-md-10">
-                        <div class="input-group input-group-lg mt-4">
+                    <div class="col-md-12">
+                        <div class="input-group input-group-lg mt-4 text-light">
                             <span class="input-group-text" id="inputGroup-sizing-lg">Password</span>
                             <input type="password" class="form-control bg-dark text-light"
                                    aria-label="Sizing example input"
                                    aria-describedby="inputGroup-sizing-lg" name="password">
-                        </div>
-                    </div>
 
-                    <div class="col-md-2 mt-3">
-                        <button class="btn btn-info mt-3 w-100">
-                            Login
-                        </button>
+                            <button class="btn btn-info">
+                                Login
+                            </button>
+                        </div>
                     </div>
                 </div>
 
             </form>
+            <p class="mt-5">AvitoTextBot</p>
         </div>
     </div>
 </div>
