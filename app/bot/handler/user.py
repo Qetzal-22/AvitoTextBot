@@ -425,6 +425,12 @@ async def process_register_callback(callback: CallbackQuery, state: FSMContext, 
     await callback.answer()
     return await register(callback.message, state, db)
 
+@user_router_bot.callback_query(F.data.startswith("phone"))
+async def process_phone_category(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.answer("Категория телефоны пока не доступна...")
+    await callback.message.answer("Попробуйте другую")
+
 ############################################################################################################################
 ############################################################################################################################
 ############################################################################################################################
