@@ -40,9 +40,16 @@ app.add_middleware(
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
+    text = """
+    🤖 Добро пожаловать в Avito Text Bot!
+
+    Я помогу создать продающее описание для объявления на Avito с помощью AI.
+    
+    Чтобы начать работу, нужно зарегистрироваться.
+    Нажмите кнопку ниже 👇
+    """
     await message.answer(
-        "<i>AvitoTextBot</i>\n"
-        "Для начала работы зарегистрируйся",
+        text,
         parse_mode="HTML",
         reply_markup=await register_kb()
     )
@@ -50,13 +57,35 @@ async def cmd_start(message: Message):
 
 @dp.message(Command("help"))
 async def cmd_help(message: Message):
+    text = """
+    ℹ️ Помощь
+
+    Этот бот генерирует продающие тексты для объявлений на Avito.
+    
+    Доступные команды:
+    
+    /start — запуск бота
+    /register — регистрация
+    /main — главное меню
+    /help — помощь
+    
+    Как пользоваться:
+    
+    1. Зарегистрируйтесь
+    2. Выберите категорию товара
+    3. Заполните данные
+    4. Получите готовый текст
+    
+    Подписки:
+    
+    FREE — ограниченное количество запросов
+    PRO — больше запросов
+    PREMIUM — максимальные лимиты
+    
+    Если возникли проблемы — обратитесь к администратору.
+    """
     await message.answer(
-        "<i>AvitoTextBot</i>\n"
-        "<b>Commands:</b>\n"
-        "1) /start - Запуск бота\n"
-        "2) /register - Регистрация\n"
-        "3) /main - На главную\n"
-        "4) /help - Помощь",
+        text,
         parse_mode="HTML",
         reply_markup=await register_kb()
     )
