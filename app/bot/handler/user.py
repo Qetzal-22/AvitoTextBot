@@ -290,6 +290,7 @@ async def text_generate_get_additional(message: Message, state: FSMContext, db: 
     logger.info("User %s entered additional", user_id)
     await state.update_data(additional=additional)
     data = await state.get_data()
+    await state.clear()
 
     # request AI
     logger.info("AI request started for user %s", user_id)
@@ -301,7 +302,6 @@ async def text_generate_get_additional(message: Message, state: FSMContext, db: 
     crud.create_request(user.id, resp, db)
     crud.update_user_add_request(user.id, db)
 
-    await state.clear()
 
 
 ############################################### profile ####################################################################
