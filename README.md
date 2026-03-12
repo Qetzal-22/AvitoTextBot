@@ -8,14 +8,14 @@
 + SQLite database
 
 ## Tech Stack
-+ Python 3.9
++ Python 3.9+
 + FastAPI
 + Jinja2
 + Uvicorn
 + Aiogram
 + SQLAlchemy
 + APScheduler
-+ OpenRouterAPI
++ OpenRouter API
 
 ## Installation
 Клонируйте репозиторий себе на устройство
@@ -25,7 +25,7 @@ cd AvitoTextBot
 ```
 Установка зависимостей
 ```commandline
-pip install -r requipments.txt
+pip install -r requirements.txt
 ```
 Создание .env
 ```
@@ -38,6 +38,15 @@ SESSION_SECRET_KEY = "GENERATE BIG RANDOM NUMBER"
 ```commandline
 python main.py
 ```
+
+## Run with Docker
+### Build image
+
+`docker build -t avito_text_bot .`
+
+### Run container
+
+`docker run -d --name avito_text_bot avito_text_bot`
 
 ## Project Structure
 ```md
@@ -61,17 +70,63 @@ python main.py
 
 ## Admin Panel
 Admin panel allows:
-+ manage user
-+ manage payment
-+ view analyst statistic
-+ monitor request
++ manage users
++ manage payments
++ view analytics
++ monitor requests
 
 URL:
 > http://localhost:8000/login
 
-## Screenshot
+## Screenshots
 ### Telegram bot
+Start and register
+![Schema](docs/image/start.jpg)
+
+Profile
+![Schema](docs/image/profile.jpg)
+
+View data plan
+![Schema](docs/image/data_plan.jpg)
+
+Pay plan
+![Schema](docs/image/pay_plan.jpg)
+
+Generate text
+![Schema](docs/image/generate_1.jpg)
+![Schema](docs/image/generate_2.jpg)
+![Schema](docs/image/generate_3.jpg)
+
+
+
+
 ### Admin Panel
+Login
+![Schema](docs/image/login.png)
+
+Dashboard
+![Schema](docs/image/dashboard_1.png)
+![Schema](docs/image/dashboard_2.png)
+
+Users
+![Schema](docs/image/users.png)
+
+User
+![Schema](docs/image/user_1.png)
+![Schema](docs/image/user_2.png)
+
+Payments
+![Schema](docs/image/payments.png)
+
+Payment
+![Schema](docs/image/payment.png)
+
+Requests
+![Schema](docs/image/requests.png)
+
+
+
+
 
 ## Configuration
 | Variable | Description |
@@ -82,13 +137,13 @@ PASSWORD_API | Password for admin panel |
 SESSION_SECRET_KEY | Secret key for sessions |
 
 
-## Commands
+## Bot Commands
 + `/start` - Запуск бота, вывод приведственного сообщения
 + `/register` - Регистрация пользователя для доступа к функционалу
 + `/main` - Переход к главному меню
 + `/help` - Помощь, кратное описание команд и возможностей бота
 
-## Admin endpoints
+## Admin API endpoints
 + /dashboard
 + /users
 + /requests
