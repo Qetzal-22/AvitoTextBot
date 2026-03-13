@@ -93,9 +93,16 @@ async def text_generate_handler(message: Message, db: Session):
     user = crud.get_user_tg_id(user_id, db)
     logger.info("DB response get_user user_id=%s", user_id)
     if user is None:
-        logger.warning(f"User not found in DB user_id=%s", user_id)
+        logger.warning("User not found in DB user_id=%s", user_id)
         await message.answer(f"Вы не зарегистрированны!", reply_markup=await register_kb())
         return
+
+    max_requests = DATA_PLAN.get(user.data_plan.value).get("count_request")
+    if user.daily_request >= max_requests:
+        logger.warning("User has reached the request limits user_id=%s", user_id)
+        await message.answer("У вас закончился лимит заросов на сегодня\nПопробуйте снова c 0:00")
+        return 
+
     await message.answer("Выберите категорию в которой хотите продать товар:", reply_markup=await category_kb())
 
 @user_router_bot.callback_query(F.data.startswith("car"))
