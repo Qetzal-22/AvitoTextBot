@@ -303,11 +303,11 @@ async def text_generate_get_additional(message: Message, state: FSMContext, db: 
     logger.info("AI request started for user %s", user_id)
     await message.answer("Генерируем текст... подождите...")
     resp = await ai.get_avito_text(data)
+    crud.update_user_add_request(user_id, db)
 
     logger.info("AI response received for user - %s, length response - %s", user_id, len(resp))
     await message.answer(resp)
     crud.create_request(user.id, resp, db)
-    crud.update_user_add_request(user.id, db)
 
 
 
