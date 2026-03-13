@@ -81,21 +81,27 @@ URL:
 ## Screenshots
 ### Telegram bot
 Start and register
-![Schema](docs/image/start.jpg)
+
+<img src="docs/image/start.jpg" width="200">
 
 Profile
-![Schema](docs/image/profile.jpg)
+
+<img src="docs/image/profile.jpg" width="200">
 
 View data plan
-![Schema](docs/image/data_plan.jpg)
+
+<img src="docs/image/data_plan.jpg" width="200">
 
 Pay plan
-![Schema](docs/image/pay_plan.jpg)
+
+<img src="docs/image/pay_plan.jpg" width="200">
 
 Generate text
-![Schema](docs/image/generate_1.jpg)
-![Schema](docs/image/generate_2.jpg)
-![Schema](docs/image/generate_3.jpg)
+
+<img src="docs/image/generate_1.jpg" width="200">
+<img src="docs/image/generate_2.jpg" width="200">
+<img src="docs/image/generate_3.jpg" width="200">
+
 
 
 
